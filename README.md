@@ -16,29 +16,29 @@ You need to have Vim/NeoVim with Python3 support
 
 ### Installing
 #### [Vim-Plug](https://github.com/junegunn/vim-plug)
-1. Add `Plug 'hugolgst/vimsence'` to your vimrc file.
+1. Add `Plug 'sglkc/vimsence'` to your vimrc file.
 2. Reload your vimrc or restart
 3. Run `:PlugInstall`
 
 #### [Vundle](https://github.com/VundleVim/Vundle.vim) or similar
-1. Add `Plugin 'hugolgst/vimsence'` to your vimrc file.
+1. Add `Plugin 'sglkc/vimsence'` to your vimrc file.
 2. Reload your vimrc or restart
 3. Run `:BundleInstall`
 
 #### [NeoBundle](https://github.com/Shougo/neobundle.vim)
-1. Add `NeoBundle 'hugolgst/vimsence'` to your vimrc file.
+1. Add `NeoBundle 'sglkc/vimsence'` to your vimrc file.
 2. Reload your vimrc or restart
 3. Run `:NeoUpdate`
 
 #### [Pathogen](https://github.com/tpope/vim-pathogen)
 ```sh
 cd ~/.vim/bundle
-git clone https://github.com/hugolgst/vimsence.git
+git clone https://github.com/sglkc/vimsence.git
 ```
 
 #### Vim8 packages
 ```sh
-git submodule add https://github.com/hugolgst/vimsence.git vimsence
+git submodule add https://github.com/sglkc/vimsence.git vimsence
 ```
 
 ## Configuration
@@ -47,17 +47,20 @@ You can configure the messages of VimSence in your `.vimrc` with these options:
 let g:vimsence_client_id = '439476230543245312'
 let g:vimsence_small_text = 'NeoVim'
 let g:vimsence_small_image = 'neovim'
-let g:vimsence_editing_large_text = '{filetype} file'
+let g:vimsence_editing_text = '{filetype} file'
 let g:vimsence_editing_details = 'Editing {filename}'
 let g:vimsence_editing_state = 'Working on {directory}'
 let g:vimsence_file_explorer_text = 'In NERDTree'
 let g:vimsence_file_explorer_details = 'Looking for files'
 let g:vimsence_idle_text = 'Idling'
-let g:vimsence_idle_state = '  '
+let g:vimsence_terminal_details = 'Bash shell'
+let g:vimsence_terminal_state = 'Running {termcmds}'
+let g:vimsence_add_timestamp = '600'
 let g:vimsence_custom_icons = {'filetype': 'iconname'}
 ```
 ### Tags
-You can put this inside `editing_large_text`, `editing_state` and `editing_details`
+You can put this inside `editing_text`, `editing_state` and `editing_details`
+`{termcmds}` should only put in `terminal_state` and `terminal_details`
 - `{filename}` current file name with extension
 - `{filetype}` current file extension
 - `{filesize}` current file human-readable size (KB, MB, ..)
@@ -65,6 +68,7 @@ You can put this inside `editing_large_text`, `editing_state` and `editing_detai
 - `{fileline}` current file lines
 - `{filedir}` current file directory
 - `{directory}` workspace directory
+- `{termcmds}` terminal launch commands
 
 ## Development
 First create a virtual environment.

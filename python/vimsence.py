@@ -15,12 +15,16 @@ if vim.eval('exists("g:vimsence_small_text")') == '1':
 if vim.eval('exists("g:vimsence_small_image")') == '1':
     small_image = vim.eval('g:vimsence_small_image')
 
-start_time = int(time.time())
+if vim.eval('exists("g:vimsence_add_timestamp")') == '1':
+    start_time = vim.eval('g:vimsence_add_timestamp')
+
+start_time = int(time.time()) - int(start_time)
+
 base_activity = {
     'details': 'Nothing',
     'state': '',
     'timestamps': {
-        'start': start_time
+        'start': int(start_time)
     },
     'assets': {
         'small_text': small_text,
@@ -135,6 +139,23 @@ def update_presence():
     filesize = get_filesize()
     filesizeb = get_filesizeb()
     fileline = get_fileline()
+    filebuftype = get_filebuftype()
+    termcmds = get_termcmds()
+
+    if u.contains(ignored_file_types, filetype):
+        # Change ignored file name to set name, use default activity if empty
+        if vim.eval('exists("g:vimsence_ignored_file_type_name")') == '1':
+            filetype = vim.eval('g:vimsence_ignored_file_type_name')
+        else:
+            rpc_obj.set_activity(base_activity)
+
+    if u.contains(ignored_directories, directory) or u.contains(ignored_directories, filedir):
+        # Change ignored directory name to set name, use default activity if empty
+        if vim.eval('exists("g:vimsence_ignored_directories_name")') == '1':
+            directory = vim.eval('g:vimsence_ignored_directories_name')
+            filedir = vim.eval('g:vimsence_ignored_directories_name')
+        else:
+            rpc_obj.set_activity(base_activity)
 
     # Replace function for customization by user,
     # not a good code but it's fast and does the job
@@ -146,6 +167,7 @@ def update_presence():
         string = string.replace("{filesize}", filesize)
         string = string.replace("{filesizeb}", filesizeb)
         string = string.replace("{fileline}", fileline)
+        string = string.replace("{termcmds}", termcmds)
         return string
 
     editing_text = 'Editing a {filetype} file'
@@ -162,13 +184,6 @@ def update_presence():
     if (vim.eval("exists('{}')".format("g:vimsence_editing_details")) == "1"):
         editing_details = vim.eval("g:vimsence_editing_details")
     details = parse_tags(editing_details)
-
-    if u.contains(ignored_file_types, filetype) or u.contains(ignored_directories, directory):
-        # Priority #1: if the file type or folder is ignored, use the default activity to avoid exposing
-        # the folder or file.
-        rpc_obj.set_activity(base_activity)
-
-        return
 
     if filetype and (filetype in has_thumbnail or filetype in remap):
         # Check for files with thumbnail support
@@ -193,6 +208,25 @@ def update_presence():
 
         if (vim.eval("exists('{}')".format("g:vimsence_file_explorer_state")) == "1"):
             state = vim.eval("g:vimsence_file_explorer_state")
+    elif filebuftype == "terminal":
+        # Special case: terminals. These have a separate icon and description.
+        large_image = 'sh'
+        if (vim.eval("exists('{}')".format("g:vimsence_terminal_image")) == "1"):
+            large_text = vim.eval("g:vimsence_terminal_image")
+
+        large_text = 'In the terminal'
+        if vim.eval('exists("g:vimsence_terminal_text")') == '1':
+            large_text = vim.eval('g:vimsence_terminal_text')
+
+        details = 'Running terminal'
+        if (vim.eval("exists('{}')".format("g:vimsence_terminal_details")) == "1"):
+            details = vim.eval("g:vimsence_terminal_details")
+        details = parse_tags(details)
+
+        state = '{termcmds}'
+        if (vim.eval("exists('{}')".format("g:vimsence_terminal_state")) == "1"):
+            state = vim.eval("g:vimsence_terminal_state")
+        state = parse_tags(state)
     elif (is_writeable() and filename):
         # if none of the other match, check if the buffer is writeable. If it is,
         # assume it's a file and continue.
@@ -212,6 +246,7 @@ def update_presence():
             large_text = vim.eval("g:vimsence_idle_text")
             details = vim.eval("g:vimsence_idle_text")
 
+        state = '   '
         if (vim.eval("exists('{}')".format("g:vimsence_idle_state")) == "1"):
             state = vim.eval("g:vimsence_idle_state")
 
@@ -344,3 +379,27 @@ def get_fileline():
     """
     
     return vim.eval('line("$")')
+
+def get_filebuftype():
+
+    """Get file buffer type
+    returns 'terminal' if in a terminal, returns null if not
+    :returns: string
+    """
+
+    return vim.eval('&buftype')
+
+def get_termcmds():
+
+    """Get terminal launch commands
+    ex. returns 'mysql -u root' on :terminal mysql -u root
+    returns 'bash' if ran without additional commands
+    :returns: string
+    """
+
+    str = vim.eval('expand("%:t")')
+    match = re.search(r'(?!\d*\:)([\s\S]*)', str)
+    if match:
+        return match.group()
+    else:
+        return ''
