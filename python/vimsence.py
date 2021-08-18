@@ -212,7 +212,7 @@ def update_presence():
         # Special case: terminals. These have a separate icon and description.
         large_image = 'sh'
         if (vim.eval("exists('{}')".format("g:vimsence_terminal_image")) == "1"):
-            large_text = vim.eval("g:vimsence_terminal_image")
+            large_image = vim.eval("g:vimsence_terminal_image")
 
         large_text = 'In the terminal'
         if vim.eval('exists("g:vimsence_terminal_text")') == '1':
