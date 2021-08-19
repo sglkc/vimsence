@@ -144,18 +144,29 @@ def update_presence():
 
     if u.contains(ignored_file_types, filetype):
         # Change ignored file name to set name, use default activity if empty
-        if vim.eval('exists("g:vimsence_ignored_file_type_name")') == '1':
-            filetype = vim.eval('g:vimsence_ignored_file_type_name')
+        if vim.eval('exists("g:vimsence_ignored_file_types_name")') == '1':
+            filename = vim.eval('g:vimsence_ignored_file_types_name')
+            filetype = ''
         else:
             rpc_obj.set_activity(base_activity)
+            return
 
     if u.contains(ignored_directories, directory) or u.contains(ignored_directories, filedir):
         # Change ignored directory name to set name, use default activity if empty
         if vim.eval('exists("g:vimsence_ignored_directories_name")') == '1':
-            directory = vim.eval('g:vimsence_ignored_directories_name')
-            filedir = vim.eval('g:vimsence_ignored_directories_name')
+            ignored_name = vim.eval('g:vimsence_ignored_directories_name')
+            if type(ignored_directories) is list:
+                for a in ignored_directories:
+                    if a in directory:
+                        directory = directory.replace(a, ignored_name)
+                    if a in filedir:
+                        filedir = filedir.replace(a, ignored_name)
+            elif type(ignored_directories) is str:
+                directory = directory.replace(ignored_directories, ignored_name)
+                filedir = directory.replace(ignored_directories, ignored_name)
         else:
             rpc_obj.set_activity(base_activity)
+            return
 
     # Replace function for customization by user,
     # not a good code but it's fast and does the job
@@ -233,7 +244,7 @@ def update_presence():
         large_image = 'none'
         if (vim.eval("exists('{}')".format("g:vimsence_unknown_image")) == "1"):
             large_image = vim.eval("g:vimsence_unknown_image")
-        large_text = parse_tags(editing_text) if filetype else "Unknown" if not get_extension() else get_extension()
+        large_text = parse_tags(editing_text) if filetype else "Unknown" if not get_extension() or filetype == '' else get_extension()
 
     else:
         large_image = 'none'
